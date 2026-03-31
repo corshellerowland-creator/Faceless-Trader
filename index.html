@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#050508" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Faceless Trader" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icon-512.png" />
+  <title>Faceless Trader Smart Scaling</title>
+  <style>
+    :root{
+      --bg:#050508; --panel:#0b0b12; --panel2:#12121b;
+      --pink:#ff4fd8; --purple:#c084fc; --purple2:#8b5cf6; --white:#fbf7ff;
+      --muted:#cbb8ec; --green:#22c55e; --red:#ef4444; --amber:#f59e0b;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;background:
+      radial-gradient(circle at top left, rgba(255,79,216,.10), transparent 22%),
+      radial-gradient(circle at top right, rgba(139,92,246,.10), transparent 26%),
+      var(--bg);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;min-height:100vh}
+    .shell{max-width:480px;margin:0 auto;padding:14px 14px 28px}
+    .app{background:linear-gradient(180deg,#06060a 0%, #0b0b12 100%);border:1px solid rgba(192,132,252,.26);border-radius:30px;padding:16px;box-shadow:0 18px 50px rgba(139,92,246,.16)}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+    .brand-icon{width:54px;height:54px;border-radius:18px;background:
+      radial-gradient(circle at 30% 30%, rgba(255,79,216,.26), transparent 35%),
+      radial-gradient(circle at 70% 70%, rgba(139,92,246,.25), transparent 40%), #0e0c16;
+      border:1px solid rgba(255,79,216,.24);display:flex;align-items:center;justify-content:center;
+      color:var(--pink);font-weight:900;font-size:18px}
+    .title{font-size:29px;font-weight:900;color:var(--pink);line-height:1;margin:0}
+    .subtitle{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.35}
+    .topgrid,.grid2,.stats,.nav,.toggle{display:grid;gap:10px}
+    .topgrid,.grid2,.stats,.toggle{grid-template-columns:1fr 1fr}
+    .topgrid{margin:12px 0}
+    .pill,.card,.section,.nav button,.toggle button,.input,select,textarea{background:var(--panel2);border:1px solid rgba(192,132,252,.20)}
+    .pill{border-radius:18px;padding:12px}
+    .pill .k,.label{font-size:11px;color:var(--pink);font-weight:900;text-transform:uppercase;letter-spacing:.45px}
+    .pill .v{font-size:15px;font-weight:800;margin-top:4px}
+    .nav{grid-template-columns:repeat(5,1fr);margin:6px 0 12px}
+    .nav button,.toggle button{border:none;border-radius:16px;padding:11px 8px;color:var(--purple);font-weight:800;font-size:13px;cursor:pointer}
+    .nav button.active,.toggle button.active{background:linear-gradient(180deg, rgba(255,79,216,.18), rgba(139,92,246,.24));color:#fff;border:1px solid rgba(255,79,216,.46)}
+    .section{display:none;border-radius:24px;padding:14px}
+    .section.active{display:block}
+    .hero{background:
+      radial-gradient(circle at top left, rgba(255,79,216,.17), transparent 35%),
+      radial-gradient(circle at bottom right, rgba(139,92,246,.20), transparent 40%),
+      var(--panel);border:1px solid rgba(255,79,216,.20);border-radius:22px;padding:16px;margin-top:10px}
+    .hero h2{margin:0;color:var(--pink);font-size:34px;line-height:1}
+    .muted{color:var(--muted);font-size:13px;line-height:1.4}
+    .card{border-radius:18px;padding:14px;background:#09090d}
+    .card h3{margin:0 0 8px;color:var(--pink);font-size:11px;letter-spacing:.5px;text-transform:uppercase;font-weight:900}
+    .big{font-size:30px;font-weight:900;line-height:1.05}
+    .small,.tiny{font-size:12px;color:var(--muted);line-height:1.4;margin-top:5px}
+    .label{margin:0 0 6px}
+    select,.input,textarea{width:100%;background:#050509;color:var(--white);border-radius:14px;padding:12px;font-size:16px;outline:none}
+    textarea{min-height:104px;resize:vertical}
+    .btn{width:100%;margin-top:10px;border:none;border-radius:16px;padding:14px;font-weight:900;font-size:15px;cursor:pointer;color:#fff;background:linear-gradient(180deg, rgba(255,79,216,.26), rgba(139,92,246,.32))}
+    .list{display:grid;gap:10px;margin-top:12px}
+    .item{background:#08080d;border:1px solid rgba(192,132,252,.16);border-radius:16px;padding:12px}
+    .head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+    .title2{font-weight:900}
+    .badge{font-size:10.5px;padding:4px 8px;border-radius:999px;background:rgba(139,92,246,.16);color:var(--purple);font-weight:800}
+    .bar{height:10px;background:#130f1e;border-radius:999px;overflow:hidden;border:1px solid rgba(192,132,252,.14)}
+    .bar>div{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple2));width:0%}
+    .lock-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:18px;padding:14px;margin-bottom:10px;background:linear-gradient(180deg, rgba(255,79,216,.12), rgba(139,92,246,.15));border:1px solid rgba(255,79,216,.22)}
+    .state-good{color:var(--green)} .state-bad{color:var(--red)} .state-warn{color:var(--amber)}
+    .foot{margin-top:14px;font-size:11.5px;color:#a78bfa;text-align:center;line-height:1.45}
+  </style>
+</head>
+<body>
+<div class="shell"><div class="app">
+  <div class="brand"><div class="brand-icon">FT</div><div><h1 class="title">Faceless Trader</h1><div class="subtitle">Smart scaling • max 10 micros • black / neon pink / purple</div></div></div>
+  <div class="topgrid"><div class="pill"><div class="k">$300 Goal</div><div class="v">$150 max loss</div></div><div class="pill"><div class="k">$500 Goal</div><div class="v">$250 max loss</div></div></div>
+  <div class="nav" id="nav"></div>
+
+  <section class="section active" id="home">
+    <div class="lock-banner">
+      <div><div class="label" style="margin:0 0 4px">Status</div><div class="big" id="homeStatus" style="font-size:28px">Allowed</div><div class="small" id="homeReason">You are allowed to trade.</div></div>
+      <div style="text-align:right"><div class="label" style="margin:0 0 4px">Trade Count</div><div class="big" id="tradeCounter" style="font-size:26px">0 / 3</div></div>
+    </div>
+    <div class="hero">
+      <h2 id="homeTicker">MES</h2><div class="muted" id="homeTickerDesc"></div>
+      <div class="stats">
+        <div class="card"><h3>Today's PnL</h3><div class="big" id="homePnl">$0</div><div class="small">Live daily snapshot.</div></div>
+        <div class="card"><h3>Session</h3><div class="big" id="homeSession">Asia</div><div class="small" id="homeSessionNote">Lower volatility. Be patient.</div></div>
+        <div class="card"><h3>Smart Size</h3><div class="big" id="homeSmartSize">2</div><div class="small">Auto suggested contract size.</div></div>
+        <div class="card"><h3>Next Action</h3><div class="big" id="homeAction">Trade</div><div class="small">If locked: journal instead.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="plan">
+    <div class="grid2">
+      <div><div class="label">Ticker</div><select id="ticker"></select></div>
+      <div><div class="label">Daily Goal</div><select id="goal"><option value="300">$300 Goal</option><option value="500">$500 Goal</option></select></div>
+    </div>
+    <div class="grid2" style="margin-top:10px">
+      <div><div class="label">Contracts</div><select id="contracts"><option value="2">2 micros</option><option value="4">4 micros</option><option value="6">6 micros</option><option value="8">8 micros</option><option value="10">10 micros</option></select></div>
+      <div><div class="label">Session</div><select id="planSession"><option>Asia</option><option>NY</option></select></div>
+    </div>
+    <div class="hero">
+      <h2 id="planTicker">MES</h2><div class="muted" id="planDesc"></div>
+      <div class="stats">
+        <div class="card"><h3>Profit Target</h3><div class="big" id="profitPts">-</div><div class="small">Points to goal.</div></div>
+        <div class="card"><h3>Stop Size</h3><div class="big" id="stopPts">-</div><div class="small">Points to max loss.</div></div>
+        <div class="card"><h3>$ / Point</h3><div class="big" id="dollarPerPoint">-</div><div class="small">Per micro.</div></div>
+        <div class="card"><h3>Max Allowed</h3><div class="big" id="maxAllowed">10</div><div class="small">Hard cap: 10 micros.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="scaling">
+    <div class="hero">
+      <h2 id="smartContracts">2</h2>
+      <div class="muted" id="smartReason">Start at 2 micros.</div>
+      <div class="stats">
+        <div class="card"><h3>Stage</h3><div class="big" id="smartStage">Base</div><div class="small">Progressive size ladder.</div></div>
+        <div class="card"><h3>Rule</h3><div class="big" id="smartRule">Protect</div><div class="small">Size increases after discipline, not before.</div></div>
+      </div>
+    </div>
+    <div class="list">
+      <div class="item"><div class="title2">Smart Scaling Ladder</div><div class="tiny">2 → 4 → 6 → 8 → 10</div></div>
+      <div class="item"><div class="tiny"><strong>Base:</strong> start at 2 micros.</div><div class="tiny"><strong>1 green day or first clean win:</strong> 4 micros.</div><div class="tiny"><strong>2–3 green days:</strong> 6 micros.</div><div class="tiny"><strong>Strong consistency:</strong> 8 micros.</div><div class="tiny"><strong>Only if clearly earned:</strong> 10 micros max.</div><div class="tiny"><strong>Any rule break / revenge / red day hit:</strong> back to 2 micros.</div></div>
+    </div>
+  </section>
+
+  <section class="section" id="lock">
+    <div class="toggle" id="lockToggles">
+      <button data-name="tradesOk" class="active">≤ 3 Trades</button>
+      <button data-name="revengeOff" class="active">No Revenge</button>
+      <button data-name="setupOnly" class="active">A+ Setup</button>
+      <button data-name="withinLoss" class="active">Within Loss</button>
+    </div>
+    <div class="hero">
+      <h2 id="lockTitle">YES</h2><div class="muted" id="lockReason">You are allowed to trade.</div>
+      <div class="stats">
+        <div class="card"><h3>Mode</h3><div class="big" id="lockStatus">Allowed</div><div class="small">Green means trade. Red means stop.</div></div>
+        <div class="card"><h3>Do This</h3><div class="big" id="lockAction">Trade</div><div class="small">If locked, journal.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="pnl">
+    <div class="grid2">
+      <div><div class="label">Today's PnL ($)</div><input class="input" id="dayPnl" type="number" step="0.01" placeholder="0"></div>
+      <div><div class="label">Trades Taken</div><input class="input" id="tradeCountInput" type="number" step="1" placeholder="0"></div>
+    </div>
+    <button class="btn" id="savePnl">Save Day</button>
+    <div class="stats">
+      <div class="card"><h3>Progress To Goal</h3><div class="big" id="goalProgress">0%</div><div class="bar" style="margin-top:10px"><div id="goalBar"></div></div><div class="small">Based on plan goal.</div></div>
+      <div class="card"><h3>Day Color</h3><div class="big" id="dayColor">Flat</div><div class="small">Green, red, or flat.</div></div>
+      <div class="card"><h3>Weekly Total</h3><div class="big" id="weeklyTotal">$0</div><div class="small">Recent saved days.</div></div>
+      <div class="card"><h3>Green Days</h3><div class="big" id="greenDays">0</div><div class="small">Recent green count.</div></div>
+    </div>
+    <div class="list" id="pnlList"></div>
+  </section>
+
+  <div class="foot">Smart scaling update • cap locked at 10 micros • upload to Netlify Drop • open in Safari • Add to Home Screen.</div>
+</div></div>
+
+<script>
+const ladders = {
+  MES:{valuePerPoint:5,maxAllowed:10,label:"Micro E-mini S&P 500",
+      goals:{300:{2:{profit:60,stop:15},4:{profit:30,stop:7.5},6:{profit:20,stop:5},8:{profit:15,stop:3.75},10:{profit:12,stop:3}},
+             500:{2:{profit:100,stop:25},4:{profit:50,stop:12.5},6:{profit:33.333,stop:8.333},8:{profit:25,stop:6.25},10:{profit:20,stop:5}}}},
+  MNQ:{valuePerPoint:2,maxAllowed:10,label:"Micro E-mini Nasdaq-100",
+      goals:{300:{2:{profit:75,stop:37.5},4:{profit:37.5,stop:18.75},6:{profit:25,stop:12.5},8:{profit:18.75,stop:9.375},10:{profit:15,stop:7.5}},
+             500:{2:{profit:125,stop:62.5},4:{profit:62.5,stop:31.25},6:{profit:41.667,stop:20.833},8:{profit:31.25,stop:15.625},10:{profit:25,stop:12.5}}}},
+  MYM:{valuePerPoint:0.5,maxAllowed:10,label:"Micro E-mini Dow",
+      goals:{300:{2:{profit:300,stop:150},4:{profit:150,stop:75},6:{profit:100,stop:50},8:{profit:75,stop:37.5},10:{profit:60,stop:30}},
+             500:{2:{profit:500,stop:250},4:{profit:250,stop:125},6:{profit:166.667,stop:83.333},8:{profit:125,stop:62.5},10:{profit:100,stop:50}}}},
+  MGC:{valuePerPoint:10,maxAllowed:10,label:"Micro Gold",
+      goals:{300:{2:{profit:15,stop:7.5},4:{profit:7.5,stop:3.75},6:{profit:5,stop:2.5},8:{profit:3.75,stop:1.875},10:{profit:3,stop:1.5}},
+             500:{2:{profit:25,stop:12.5},4:{profit:12.5,stop:6.25},6:{profit:8.333,stop:4.167},8:{profit:6.25,stop:3.125},10:{profit:5,stop:2.5}}}}
+};
+const tabs=[["home","Home"],["plan","Plan"],["scaling","Scale"],["lock","Lock"],["pnl","PnL"]];
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const fmt=n=>Math.abs(n-Math.round(n))<1e-9?String(Math.round(n)):String(Number(n.toFixed(3)));
+const store={get:(k,d)=>JSON.parse(localStorage.getItem(k)||JSON.stringify(d)), set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+const appState=store.get("ftSmartState",{ticker:"MES",goal:"300",contracts:"2",session:"Asia",pnl:0,trades:0,lock:{tradesOk:true,revengeOff:true,setupOnly:true,withinLoss:true}});
+function saveState(){store.set("ftSmartState",appState)}
+
+function buildNav(){
+  $("#nav").innerHTML=tabs.map(([id,label],i)=>`<button class="${i===0?'active':''}" data-target="${id}">${label}</button>`).join("");
+  $$("#nav button").forEach(btn=>btn.onclick=()=>{$$("#nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");$$(".section").forEach(s=>s.classList.remove("active"));$("#"+btn.dataset.target).classList.add("active")});
+}
+function populateTickers(){
+  const opts=Object.keys(ladders).map(k=>`<option value="${k}">${k}</option>`).join("");
+  $("#ticker").innerHTML=opts;
+}
+function allowedToTrade(){ return Object.values(appState.lock).every(Boolean); }
+
+function calcSmartSize(){
+  const pnlEntries = store.get("pnlEntries", []);
+  const recent = pnlEntries.slice(0,3);
+  const greenCount = recent.filter(x => Number(x.pnl||0) > 0).length;
+  const currentPnl = Number(appState.pnl || 0);
+  const ok = allowedToTrade();
+
+  if (!ok || currentPnl < 0) return {size:2, stage:"Reset", reason:"Rule break, lockout, or red day → back to 2 micros.", rule:"Protect"};
+  if (greenCount >= 3) return {size:8, stage:"Strong", reason:"3 recent green days → 8 micros suggested.", rule:"Scale with consistency"};
+  if (greenCount >= 2) return {size:6, stage:"Building", reason:"2 recent green days → 6 micros suggested.", rule:"Stay controlled"};
+  if (currentPnl > 0 || greenCount >= 1) return {size:4, stage:"Step Up", reason:"First clean win / 1 green day → 4 micros suggested.", rule:"Earn the next step"};
+  return {size:2, stage:"Base", reason:"Start at 2 micros.", rule:"Protect first"};
+}
+function syncContractsToSmart(){
+  const smart = calcSmartSize();
+  const allowed = [2,4,6,8,10];
+  const current = Number(appState.contracts);
+  if (!allowed.includes(current) || current > 10) appState.contracts = String(smart.size);
+  saveState();
+}
+function renderHome(){
+  const d=ladders[appState.ticker], ok=allowedToTrade(), smart=calcSmartSize();
+  $("#homeTicker").textContent=appState.ticker;
+  $("#homeTickerDesc").textContent=`${d.label} • $${fmt(d.valuePerPoint)} per point per micro`;
+  $("#homePnl").textContent=`$${fmt(appState.pnl||0)}`;
+  $("#homeSession").textContent=appState.session;
+  $("#homeSessionNote").textContent=appState.session==="Asia"?"Lower volatility. Be patient.":"Higher volatility. Wait for confirmation.";
+  $("#homeSmartSize").textContent=smart.size;
+  $("#homeStatus").textContent=ok?"Allowed":"Locked";
+  $("#homeStatus").className="big "+(ok?"state-good":"state-bad");
+  $("#homeReason").textContent=ok?smart.reason:"Locked out. Review rules before any trade.";
+  $("#homeAction").textContent=ok?"Trade":"Journal";
+  $("#tradeCounter").textContent=`${appState.trades||0} / 3`;
+}
+function renderPlan(){
+  $("#ticker").value=appState.ticker; $("#goal").value=appState.goal; $("#contracts").value=appState.contracts; $("#planSession").value=appState.session;
+  const d=ladders[appState.ticker], row=d.goals[appState.goal][appState.contracts];
+  $("#planTicker").textContent=appState.ticker;
+  $("#planDesc").textContent=`${d.label} • $${fmt(d.valuePerPoint)} per point per micro`;
+  $("#profitPts").textContent=`${fmt(row.profit)} pts`;
+  $("#stopPts").textContent=`${fmt(row.stop)} pts`;
+  $("#dollarPerPoint").textContent=`$${fmt(d.valuePerPoint)}`;
+  $("#maxAllowed").textContent="10";
+  renderHome(); renderPnlSummary(); renderScaling();
+}
+function renderScaling(){
+  const smart = calcSmartSize();
+  $("#smartContracts").textContent = smart.size;
+  $("#smartReason").textContent = smart.reason;
+  $("#smartStage").textContent = smart.stage;
+  $("#smartRule").textContent = smart.rule;
+}
+function setupPlan(){
+  $("#ticker").onchange=e=>{appState.ticker=e.target.value; saveState(); renderPlan()};
+  $("#goal").onchange=e=>{appState.goal=e.target.value; saveState(); renderPlan()};
+  $("#contracts").onchange=e=>{appState.contracts=e.target.value; saveState(); renderPlan()};
+  $("#planSession").onchange=e=>{appState.session=e.target.value; saveState(); renderPlan()};
+}
+function renderLock(){
+  $$("#lockToggles button").forEach(btn=>btn.classList.toggle("active", appState.lock[btn.dataset.name]));
+  const ok=allowedToTrade();
+  $("#lockTitle").textContent=ok?"YES":"NO";
+  $("#lockReason").textContent=ok?"You are allowed to trade.":"You are locked out. Fix the broken rule first.";
+  $("#lockStatus").textContent=ok?"Allowed":"Locked";
+  $("#lockStatus").className="big "+(ok?"state-good":"state-bad");
+  $("#lockAction").textContent=ok?"Trade":"Journal";
+  renderHome(); renderScaling();
+}
+function setupLock(){
+  $$("#lockToggles button").forEach(btn=>btn.onclick=()=>{const k=btn.dataset.name; appState.lock[k]=!appState.lock[k]; saveState(); syncContractsToSmart(); renderLock(); renderPlan()});
+}
+function renderPnlSummary(){
+  $("#dayPnl").value=appState.pnl; $("#tradeCountInput").value=appState.trades;
+  const goal=Number(appState.goal), pnl=Number(appState.pnl||0), pct=goal?Math.max(0,Math.min(200,Math.round((pnl/goal)*100))):0;
+  $("#goalProgress").textContent=`${pct}%`; $("#goalBar").style.width=`${Math.min(pct,100)}%`;
+  let label="Flat"; if(pnl>0) label="Green"; if(pnl<0) label="Red";
+  $("#dayColor").textContent=label; $("#dayColor").className="big "+(label==="Green"?"state-good":label==="Red"?"state-bad":"");
+  const entries=store.get("pnlEntries",[]), weekly=entries.slice(0,7).reduce((a,b)=>a+Number(b.pnl||0),0), greens=entries.slice(0,7).filter(x=>Number(x.pnl||0)>0).length;
+  $("#weeklyTotal").textContent=`$${fmt(weekly)}`; $("#greenDays").textContent=greens;
+}
+function renderPnlList(){
+  const list=store.get("pnlEntries",[]);
+  $("#pnlList").innerHTML=list.length?list.map(x=>`<div class="item"><div class="head"><div class="title2">$${fmt(x.pnl)} day</div><div class="badge">${x.date}</div></div><div class="tiny">Trades: ${x.trades} • Goal: $${x.goal}</div></div>`).join(""):`<div class="item"><div class="tiny">No saved PnL days yet.</div></div>`;
+}
+function setupPnl(){
+  $("#savePnl").onclick=()=>{
+    appState.pnl=Number($("#dayPnl").value||0);
+    appState.trades=Number($("#tradeCountInput").value||0);
+    appState.lock.tradesOk=appState.trades<=3;
+    appState.lock.withinLoss=!(appState.goal==="300"?appState.pnl<=-150:appState.pnl<=-250);
+    const arr=store.get("pnlEntries",[]);
+    arr.unshift({pnl:appState.pnl,trades:appState.trades,goal:Number(appState.goal),date:new Date().toLocaleDateString()});
+    store.set("pnlEntries",arr.slice(0,30));
+    const smart = calcSmartSize();
+    appState.contracts = String(Math.min(smart.size, 10));
+    saveState();
+    renderPnlSummary(); renderPnlList(); renderLock(); renderPlan();
+  };
+}
+
+buildNav(); populateTickers(); syncContractsToSmart(); setupPlan(); setupLock(); setupPnl();
+renderPlan(); renderLock(); renderPnlList();
+</script>
+</body>
+</html>
