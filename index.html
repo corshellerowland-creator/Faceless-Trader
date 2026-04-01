@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faceless Trader</title>
+  <style>
+    :root {
+      --bg: #09060f;
+      --panel: #151022;
+      --panel-2: #1e1630;
+      --text: #f5ecff;
+      --muted: #b8a6d9;
+      --pink: #ff4db8;
+      --purple: #8b5cf6;
+      --cyan: #5ce1e6;
+      --green: #34d399;
+      --red: #fb7185;
+      --yellow: #fbbf24;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 20px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #07050b 0%, #120b1d 100%);
+      color: var(--text);
+    }
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 16px 80px;
+    }
+    .hero {
+      background: radial-gradient(circle at top right, rgba(255,77,184,.25), transparent 28%),
+                  radial-gradient(circle at left, rgba(92,225,230,.15), transparent 24%),
+                  linear-gradient(135deg, #181126, #0d0916);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 2rem; }
+    .hero p { margin: 0; color: var(--muted); }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin: 16px 0 18px;
+    }
+    .tab {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tab.active { background: linear-gradient(135deg, rgba(255,77,184,.18), rgba(139,92,246,.18)); border-color: rgba(255,77,184,.35); }
+    .view { display: none; }
+    .view.active { display: block; }
+    .grid { display: grid; gap: 16px; }
+    .grid.two { grid-template-columns: 1.2fr .8fr; }
+    .grid.three { grid-template-columns: repeat(3, 1fr); }
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .card h2, .card h3 { margin: 0 0 10px; }
+    .card h2 { font-size: 1.1rem; }
+    .muted { color: var(--muted); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 700;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+    }
+    .stat .label { font-size: .82rem; color: var(--muted); }
+    .stat .value { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
+    label { display: block; font-size: .9rem; font-weight: 700; margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      outline: none;
+      font-size: .96rem;
+    }
+    textarea { min-height: 90px; resize: vertical; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .form-grid.three { grid-template-columns: repeat(3, 1fr); }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    button {
+      border: 0;
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      color: white;
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    button.secondary { background: rgba(255,255,255,.08); }
+    button.warn { background: linear-gradient(135deg, #ef4444, #f97316); }
+    button.good { background: linear-gradient(135deg, #10b981, #22c55e); }
+    .list { display: grid; gap: 12px; }
+    .account-item, .journal-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      background: rgba(255,255,255,.03);
+    }
+    .account-top, .journal-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .account-title { font-size: 1rem; font-weight: 800; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .kvs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
+    .kv {
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+    }
+    .kv .k { font-size: .78rem; color: var(--muted); }
+    .kv .v { margin-top: 4px; font-weight: 800; }
+    .positive { color: var(--green); }
+    .negative { color: var(--red); }
+    .warning { color: var(--yellow); }
+    .small { font-size: .82rem; }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 26px 16px;
+      border: 1px dashed rgba(255,255,255,.12);
+      border-radius: 16px;
+    }
+    .footer-note { margin-top: 12px; color: var(--muted); font-size: .85rem; }
+    @media (max-width: 860px) {
+      .tabs { grid-template-columns: repeat(2, 1fr); }
+      .grid.two, .grid.three, .form-grid, .form-grid.three { grid-template-columns: 1fr; }
+      .kvs { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="hero">
+      <h1>Faceless Trader</h1>
+      <p>Smart eval, funded, live, and journal tracking with automatic calculations and linked updates.</p>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab active" data-view="dashboard">Dashboard</button>
+      <button class="tab" data-view="evals">Evals</button>
+      <button class="tab" data-view="funded">Funded</button>
+      <button class="tab" data-view="live">Live</button>
+      <button class="tab" data-view="journal">Journal</button>
+    </nav>
+
+    <section id="dashboard" class="view active">
+      <div class="grid two">
+        <div class="card">
+          <h2>Account Overview</h2>
+          <div class="stats" id="dashboardStats"></div>
+          <div class="footer-note">Journal entries can update eval, funded, and live accounts automatically. Editing a journal entry recalculates the linked account.</div>
+        </div>
+        <div class="card">
+          <h2>Quick Actions</h2>
+          <div class="actions">
+            <button onclick="switchView('journal')">Add Journal Entry</button>
+            <button class="secondary" onclick="switchView('evals')">Add Eval</button>
+            <button class="secondary" onclick="switchView('funded')">Add Funded</button>
+            <button class="secondary" onclick="switchView('live')">Add Live Account</button>
+          </div>
+          <div class="footer-note">Everything saves in your browser with local storage.</div>
+        </div>
+      </div>
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h2>Recent Journal</h2>
+          <div id="recentJournal"></div>
+        </div>
+        <div class="card">
+          <h2>Status Snapshot</h2>
+          <div id="statusSnapshot"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="evals" class="view">
+      <div class="grid two">
+        <div class="card">
+          <h2>Add / Update Eval</h2>
+          <form id="evalForm">
+            <input type="hidden" id="evalId" />
+            <div class="form-grid three">
+              <div>
+                <label>Firm</label>
+                <input id="evalFirm" placeholder="Topstep / Apex / Lucid" required />
+              </div>
+              <div>
+                <label>Account Size</label>
+                <input id="evalSize" type="number" step="0.01" placeholder="50000" required />
+              </div>
+              <div>
+                <label>Profit Goal</label>
+                <input id="evalGoal" type="number" step="0.01" placeholder="3000" required />
+              </div>
+            </div>
+            <div class="form-grid three">
+              <div>
+                <label>Max Drawdown</label>
+                <input id="evalDrawdown" type="number" step="0.01" placeholder="2000" required />
+              </div>
+              <div>
+                <label>Days Passed</label>
+                <input id="evalDays" type="number" step="1" placeholder="0" />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="evalStatus">
+                  <option value="active">Active</option>
+                  <option value="passed">Passed</option>
+                  <option value="failed">Failed</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label>Notes</label>
+              <textarea id="evalNotes" placeholder="Rules, reminders, mindset notes..."></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit">Save Eval</button>
+              <button type="button" class="secondary" onclick="resetEvalForm()">Clear</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Eval List</h2>
+          <div id="evalList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="funded" class="view">
+      <div class="grid two">
+        <div class="card">
+          <h2>Add / Update Funded</h2>
+          <form id="fundedForm">
+            <input type="hidden" id="fundedId" />
+            <div class="form-grid three">
+              <div>
+                <label>Firm</label>
+                <input id="fundedFirm" placeholder="Topstep / Apex / Tradeify" required />
+              </div>
+              <div>
+                <label>Starting Balance</label>
+                <input id="fundedBalance" type="number" step="0.01" placeholder="50000" required />
+              </div>
+              <div>
+                <label>Trailing / Max Drawdown</label>
+                <input id="fundedDrawdown" type="number" step="0.01" placeholder="2000" required />
+              </div>
+            </div>
+            <div class="form-grid three">
+              <div>
+                <label>Payout Goal</label>
+                <input id="fundedPayoutGoal" type="number" step="0.01" placeholder="1000" />
+              </div>
+              <div>
+                <label>Total Payout Taken</label>
+                <input id="fundedPayoutTaken" type="number" step="0.01" placeholder="0" />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="fundedStatus">
+                  <option value="active">Active</option>
+                  <option value="risk">Drawdown Risk</option>
+                  <option value="blown">Blown</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label>Notes</label>
+              <textarea id="fundedNotes" placeholder="Payout notes, rules, mistakes..."></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit">Save Funded</button>
+              <button type="button" class="secondary" onclick="resetFundedForm()">Clear</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Funded List</h2>
+          <div id="fundedList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="live" class="view">
+      <div class="grid two">
+        <div class="card">
+          <h2>Add / Update Live Account</h2>
+          <form id="liveForm">
+            <input type="hidden" id="liveId" />
+            <div class="form-grid three">
+              <div>
+                <label>Broker</label>
+                <input id="liveBroker" placeholder="Tradovate / Robinhood / Webull" required />
+              </div>
+              <div>
+                <label>Starting Balance</label>
+                <input id="liveBalance" type="number" step="0.01" placeholder="1000" required />
+              </div>
+              <div>
+                <label>Risk Limit</label>
+                <input id="liveRiskLimit" type="number" step="0.01" placeholder="200" required />
+              </div>
+            </div>
+            <div class="form-grid three">
+              <div>
+                <label>Daily Goal</label>
+                <input id="liveGoal" type="number" step="0.01" placeholder="300" />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="liveStatus">
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+              <div>
+                <label>Account Label</label>
+                <input id="liveLabel" placeholder="Main live / options / futures" />
+              </div>
+            </div>
+            <div>
+              <label>Notes</label>
+              <textarea id="liveNotes" placeholder="Rules, goals, lockout reminders..."></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit">Save Live Account</button>
+              <button type="button" class="secondary" onclick="resetLiveForm()">Clear</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Live Account List</h2>
+          <div id="liveList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="journal" class="view">
+      <div class="grid two">
+        <div class="card">
+          <h2>Journal Entry → Auto Update Linked Account</h2>
+          <form id="journalForm">
+            <input type="hidden" id="journalId" />
+            <div class="form-grid three">
+              <div>
+                <label>Date</label>
+                <input id="journalDate" type="date" required />
+              </div>
+              <div>
+                <label>Account Type</label>
+                <select id="journalAccountType" required></select>
+              </div>
+              <div>
+                <label>Account</label>
+                <select id="journalAccountId" required></select>
+              </div>
+            </div>
+            <div class="form-grid three">
+              <div>
+                <label>PnL</label>
+                <input id="journalPnl" type="number" step="0.01" placeholder="Enter positive or negative amount" required />
+              </div>
+              <div>
+                <label>Setup / Strategy</label>
+                <input id="journalSetup" placeholder="Supply & Demand / EMA Cross / ORB" />
+              </div>
+              <div>
+                <label>Result Tag</label>
+                <select id="journalTag">
+                  <option value="valid">Valid</option>
+                  <option value="failed">Failed</option>
+                  <option value="no trade">No Trade</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label>Notes</label>
+              <textarea id="journalNotes" placeholder="What happened? Why was this valid or not?"></textarea>
+            </div>
+            <div class="actions">
+              <button type="submit">Save Journal Entry</button>
+              <button type="button" class="secondary" onclick="resetJournalForm()">Clear</button>
+            </div>
+          </form>
+          <div class="footer-note">Editing a journal entry removes the old PnL effect and applies the new one to the linked account.</div>
+        </div>
+        <div class="card">
+          <h2>Journal History</h2>
+          <div id="journalList" class="list"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'facelessTraderV2';
+
+    const state = JSON.parse(localStorage.getItem(STORAGE_KEY) || JSON.stringify({
+      evals: [],
+      funded: [],
+      live: [],
+      journal: []
+    }));
+
+    const money = (n) => {
+      const value = Number(n || 0);
+      return value.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+    };
+
+    const save = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    };
+
+    const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+    const todayISO = () => new Date().toISOString().slice(0,10);
+
+    function switchView(viewId) {
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === viewId));
+      document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === viewId));
+    }
+    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => switchView(tab.dataset.view)));
+
+    function getCollection(type) {
+      if (type === 'eval') return state.evals;
+      if (type === 'funded') return state.funded;
+      return state.live;
+    }
+
+    function recalcAccount(account, type) {
+      const linked = state.journal.filter(j => j.accountType === type && j.accountId === account.id);
+      const totalPnl = linked.reduce((sum, j) => sum + Number(j.pnl || 0), 0);
+      account.totalPnl = totalPnl;
+      account.currentBalance = Number(account.startingBalance || 0) + totalPnl;
+
+      if (type === 'eval') {
+        account.remainingToGoal = Math.max(0, Number(account.goal || 0) - totalPnl);
+        account.buffer = account.currentBalance - (Number(account.startingBalance || 0) - Number(account.maxDrawdown || 0));
+        if (account.status !== 'failed' && account.status !== 'archived') {
+          account.status = totalPnl >= Number(account.goal || Infinity) ? 'passed' : 'active';
+        }
+      }
+
+      if (type === 'funded') {
+        account.buffer = account.currentBalance - (Number(account.startingBalance || 0) - Number(account.maxDrawdown || 0));
+        account.remainingToPayoutGoal = Math.max(0, Number(account.payoutGoal || 0) - totalPnl);
+        if (account.status !== 'blown' && account.status !== 'archived') {
+          account.status = account.buffer <= Number(account.maxDrawdown || 0) * 0.2 ? 'risk' : 'active';
+        }
+      }
+
+      if (type === 'live') {
+        account.remainingToGoal = Math.max(0, Number(account.dailyGoal || 0) - totalPnl);
+        account.riskBuffer = Number(account.riskLimit || 0) + totalPnl;
+      }
+    }
+
+    function recalcAll() {
+      state.evals.forEach(a => recalcAccount(a, 'eval'));
+      state.funded.forEach(a => recalcAccount(a, 'funded'));
+      state.live.forEach(a => recalcAccount(a, 'live'));
+      save();
+    }
+
+    function sortChronological(arr) {
+      return [...arr].sort((a,b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
+
+    function assignNumbers() {
+      sortChronological(state.evals).forEach((a, i) => a.number = i + 1);
+      sortChronological(state.funded).forEach((a, i) => a.number = i + 1);
+      sortChronological(state.live).forEach((a, i) => a.number = i + 1);
+    }
+
+    function renderDashboard() {
+      const allAccounts = [...state.evals, ...state.funded, ...state.live];
+      const totalPnl = state.journal.reduce((sum, j) => sum + Number(j.pnl || 0), 0);
+      const wins = state.journal.filter(j => Number(j.pnl) > 0).length;
+      const losses = state.journal.filter(j => Number(j.pnl) < 0).length;
+      const valid = state.journal.filter(j => j.tag === 'valid').length;
+      const stats = [
+        ['Active Accounts', allAccounts.filter(a => !['archived','failed','blown'].includes(a.status)).length],
+        ['Journal Entries', state.journal.length],
+        ['Total PnL', money(totalPnl)],
+        ['Wins / Losses', `${wins} / ${losses}`],
+        ['Valid Setups', valid],
+        ['Passed Evals', state.evals.filter(a => a.status === 'passed').length]
+      ];
+      document.getElementById('dashboardStats').innerHTML = stats.map(([label, value]) => `
+        <div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>
+      `).join('');
+
+      const recent = [...state.journal].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0,5);
+      document.getElementById('recentJournal').innerHTML = recent.length ? recent.map(j => {
+        const account = getCollection(j.accountType).find(a => a.id === j.accountId);
+        return `<div class="journal-item">
+          <div class="journal-top"><strong>${j.setup || 'Trade Entry'}</strong><span class="${Number(j.pnl)>=0?'positive':'negative'}">${money(j.pnl)}</span></div>
+          <div class="small muted">${j.date} • ${labelForType(j.accountType)} ${account?.number || ''} ${account ? '— ' + account.firmOrName : ''}</div>
+        </div>`;
+      }).join('') : `<div class="empty">No journal entries yet.</div>`;
+
+      const snapshotItems = [
+        ...state.evals.map(a => `${accountLabel(a,'eval')}: ${a.status.toUpperCase()} • ${money(a.currentBalance || a.startingBalance)}`),
+        ...state.funded.map(a => `${accountLabel(a,'funded')}: ${a.status.toUpperCase()} • ${money(a.currentBalance || a.startingBalance)}`),
+        ...state.live.map(a => `${accountLabel(a,'live')}: ${a.status.toUpperCase()} • ${money(a.currentBalance || a.startingBalance)}`)
+      ];
+      document.getElementById('statusSnapshot').innerHTML = snapshotItems.length ? snapshotItems.slice(0,8).map(s => `<div class="pill" style="display:flex;margin:0 0 10px;">${s}</div>`).join('') : `<div class="empty">No accounts yet.</div>`;
+    }
+
+    function labelForType(type) {
+      return type === 'eval' ? 'Eval' : type === 'funded' ? 'Funded' : 'Live';
+    }
+
+    function accountLabel(account, type) {
+      if (type === 'eval') return `Eval ${account.number}`;
+      if (type === 'funded') return `Funded ${account.number}`;
+      return `Live ${account.number}`;
+    }
+
+    function renderAccounts(type, listId) {
+      const items = sortChronological(getCollection(type));
+      const container = document.getElementById(listId);
+      if (!items.length) {
+        container.innerHTML = `<div class="empty">No ${type} accounts yet.</div>`;
+        return;
+      }
+      container.innerHTML = items.map(account => {
+        const pnlClass = Number(account.totalPnl || 0) >= 0 ? 'positive' : 'negative';
+        const name = type === 'live' ? (account.label || account.broker) : account.firm;
+        const extra = type === 'eval'
+          ? `<div class="kv"><div class="k">Left to Pass</div><div class="v">${money(account.remainingToGoal || 0)}</div></div>`
+          : type === 'funded'
+            ? `<div class="kv"><div class="k">Payout Progress</div><div class="v">${money((account.payoutGoal || 0) - (account.remainingToPayoutGoal || 0))} / ${money(account.payoutGoal || 0)}</div></div>`
+            : `<div class="kv"><div class="k">Left to Goal</div><div class="v">${money(account.remainingToGoal || 0)}</div></div>`;
+
+        return `<div class="account-item">
+          <div class="account-top">
+            <div>
+              <div class="account-title">${accountLabel(account, type)} — ${name}</div>
+              <div class="small muted">Created ${account.createdAt.slice(0,10)} • ${type === 'live' ? account.broker : account.firm}</div>
+            </div>
+            <span class="pill">${account.status}</span>
+          </div>
+          <div class="row small muted">${type === 'eval' ? `Goal ${money(account.goal)}` : type === 'funded' ? `Payout Goal ${money(account.payoutGoal || 0)}` : `Daily Goal ${money(account.dailyGoal || 0)}`}</div>
+          <div class="kvs">
+            <div class="kv"><div class="k">Current Balance</div><div class="v">${money(account.currentBalance || account.startingBalance)}</div></div>
+            <div class="kv"><div class="k">Total PnL</div><div class="v ${pnlClass}">${money(account.totalPnl || 0)}</div></div>
+            <div class="kv"><div class="k">Buffer</div><div class="v ${(account.buffer ?? account.riskBuffer) >= 0 ? 'positive' : 'negative'}">${money(account.buffer ?? account.riskBuffer ?? 0)}</div></div>
+            ${extra}
+          </div>
+          <div class="actions">
+            <button class="secondary" onclick="editAccount('${type}','${account.id}')">Edit</button>
+            <button class="warn" onclick="deleteAccount('${type}','${account.id}')">Delete</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderJournal() {
+      const items = [...state.journal].sort((a,b) => new Date(b.date) - new Date(a.date));
+      const container = document.getElementById('journalList');
+      if (!items.length) {
+        container.innerHTML = `<div class="empty">No journal entries yet.</div>`;
+        return;
+      }
+      container.innerHTML = items.map(j => {
+        const account = getCollection(j.accountType).find(a => a.id === j.accountId);
+        return `<div class="journal-item">
+          <div class="journal-top">
+            <div>
+              <strong>${j.setup || 'Trade Entry'}</strong>
+              <div class="small muted">${j.date} • ${labelForType(j.accountType)} ${account?.number || ''} ${account ? '— ' + account.firmOrName : ''}</div>
+            </div>
+            <span class="${Number(j.pnl) >= 0 ? 'positive':'negative'}"><strong>${money(j.pnl)}</strong></span>
+          </div>
+          <div class="row">
+            <span class="pill">${j.tag}</span>
+          </div>
+          ${j.notes ? `<div class="small muted" style="margin-top:10px;">${j.notes}</div>` : ''}
+          <div class="actions">
+            <button class="secondary" onclick="editJournal('${j.id}')">Edit</button>
+            <button class="warn" onclick="deleteJournal('${j.id}')">Delete</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function hydrateDerivedNames() {
+      state.evals.forEach(a => a.firmOrName = a.firm);
+      state.funded.forEach(a => a.firmOrName = a.firm);
+      state.live.forEach(a => a.firmOrName = a.label || a.broker);
+    }
+
+    function renderSelectors() {
+      const typeSelect = document.getElementById('journalAccountType');
+      const currentType = typeSelect.value || 'eval';
+      typeSelect.innerHTML = `
+        <option value="eval">Eval</option>
+        <option value="funded">Funded</option>
+        <option value="live">Live</option>
+      `;
+      typeSelect.value = currentType;
+      renderAccountSelector();
+    }
+
+    function renderAccountSelector() {
+      const type = document.getElementById('journalAccountType').value;
+      const select = document.getElementById('journalAccountId');
+      const items = sortChronological(getCollection(type));
+      select.innerHTML = items.map(a => `<option value="${a.id}">${accountLabel(a, type)} — ${a.firmOrName}</option>`).join('');
+      if (!items.length) {
+        select.innerHTML = `<option value="">No ${type} accounts yet</option>`;
+      }
+    }
+
+    document.getElementById('journalAccountType').addEventListener('change', renderAccountSelector);
+
+    function resetEvalForm() { document.getElementById('evalForm').reset(); document.getElementById('evalId').value=''; document.getElementById('evalStatus').value='active'; }
+    function resetFundedForm() { document.getElementById('fundedForm').reset(); document.getElementById('fundedId').value=''; document.getElementById('fundedStatus').value='active'; }
+    function resetLiveForm() { document.getElementById('liveForm').reset(); document.getElementById('liveId').value=''; document.getElementById('liveStatus').value='active'; }
+    function resetJournalForm() { document.getElementById('journalForm').reset(); document.getElementById('journalId').value=''; document.getElementById('journalDate').value=todayISO(); renderSelectors(); }
+
+    document.getElementById('evalForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('evalId').value;
+      const payload = {
+        id: id || uid(),
+        createdAt: id ? state.evals.find(a => a.id === id).createdAt : new Date().toISOString(),
+        firm: document.getElementById('evalFirm').value.trim(),
+        startingBalance: Number(document.getElementById('evalSize').value),
+        goal: Number(document.getElementById('evalGoal').value),
+        maxDrawdown: Number(document.getElementById('evalDrawdown').value),
+        daysPassed: Number(document.getElementById('evalDays').value || 0),
+        status: document.getElementById('evalStatus').value,
+        notes: document.getElementById('evalNotes').value.trim()
+      };
+      const idx = state.evals.findIndex(a => a.id === payload.id);
+      if (idx >= 0) state.evals[idx] = { ...state.evals[idx], ...payload };
+      else state.evals.push(payload);
+      afterDataChange();
+      resetEvalForm();
+    });
+
+    document.getElementById('fundedForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('fundedId').value;
+      const payload = {
+        id: id || uid(),
+        createdAt: id ? state.funded.find(a => a.id === id).createdAt : new Date().toISOString(),
+        firm: document.getElementById('fundedFirm').value.trim(),
+        startingBalance: Number(document.getElementById('fundedBalance').value),
+        maxDrawdown: Number(document.getElementById('fundedDrawdown').value),
+        payoutGoal: Number(document.getElementById('fundedPayoutGoal').value || 0),
+        payoutTaken: Number(document.getElementById('fundedPayoutTaken').value || 0),
+        status: document.getElementById('fundedStatus').value,
+        notes: document.getElementById('fundedNotes').value.trim()
+      };
+      const idx = state.funded.findIndex(a => a.id === payload.id);
+      if (idx >= 0) state.funded[idx] = { ...state.funded[idx], ...payload };
+      else state.funded.push(payload);
+      afterDataChange();
+      resetFundedForm();
+    });
+
+    document.getElementById('liveForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('liveId').value;
+      const payload = {
+        id: id || uid(),
+        createdAt: id ? state.live.find(a => a.id === id).createdAt : new Date().toISOString(),
+        broker: document.getElementById('liveBroker').value.trim(),
+        label: document.getElementById('liveLabel').value.trim(),
+        startingBalance: Number(document.getElementById('liveBalance').value),
+        riskLimit: Number(document.getElementById('liveRiskLimit').value),
+        dailyGoal: Number(document.getElementById('liveGoal').value || 0),
+        status: document.getElementById('liveStatus').value,
+        notes: document.getElementById('liveNotes').value.trim()
+      };
+      const idx = state.live.findIndex(a => a.id === payload.id);
+      if (idx >= 0) state.live[idx] = { ...state.live[idx], ...payload };
+      else state.live.push(payload);
+      afterDataChange();
+      resetLiveForm();
+    });
+
+    document.getElementById('journalForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = document.getElementById('journalId').value;
+      const payload = {
+        id: id || uid(),
+        date: document.getElementById('journalDate').value,
+        accountType: document.getElementById('journalAccountType').value,
+        accountId: document.getElementById('journalAccountId').value,
+        pnl: Number(document.getElementById('journalPnl').value),
+        setup: document.getElementById('journalSetup').value.trim(),
+        tag: document.getElementById('journalTag').value,
+        notes: document.getElementById('journalNotes').value.trim()
+      };
+      const idx = state.journal.findIndex(j => j.id === payload.id);
+      if (idx >= 0) state.journal[idx] = payload;
+      else state.journal.push(payload);
+      afterDataChange();
+      resetJournalForm();
+    });
+
+    function editAccount(type, id) {
+      const account = getCollection(type).find(a => a.id === id);
+      if (!account) return;
+      switchView(type === 'eval' ? 'evals' : type === 'funded' ? 'funded' : 'live');
+      if (type === 'eval') {
+        document.getElementById('evalId').value = account.id;
+        document.getElementById('evalFirm').value = account.firm;
+        document.getElementById('evalSize').value = account.startingBalance;
+        document.getElementById('evalGoal').value = account.goal;
+        document.getElementById('evalDrawdown').value = account.maxDrawdown;
+        document.getElementById('evalDays').value = account.daysPassed || 0;
+        document.getElementById('evalStatus').value = account.status;
+        document.getElementById('evalNotes').value = account.notes || '';
+      } else if (type === 'funded') {
+        document.getElementById('fundedId').value = account.id;
+        document.getElementById('fundedFirm').value = account.firm;
+        document.getElementById('fundedBalance').value = account.startingBalance;
+        document.getElementById('fundedDrawdown').value = account.maxDrawdown;
+        document.getElementById('fundedPayoutGoal').value = account.payoutGoal || 0;
+        document.getElementById('fundedPayoutTaken').value = account.payoutTaken || 0;
+        document.getElementById('fundedStatus').value = account.status;
+        document.getElementById('fundedNotes').value = account.notes || '';
+      } else {
+        document.getElementById('liveId').value = account.id;
+        document.getElementById('liveBroker').value = account.broker;
+        document.getElementById('liveBalance').value = account.startingBalance;
+        document.getElementById('liveRiskLimit').value = account.riskLimit;
+        document.getElementById('liveGoal').value = account.dailyGoal || 0;
+        document.getElementById('liveStatus').value = account.status;
+        document.getElementById('liveLabel').value = account.label || '';
+        document.getElementById('liveNotes').value = account.notes || '';
+      }
+    }
+
+    function editJournal(id) {
+      const j = state.journal.find(x => x.id === id);
+      if (!j) return;
+      switchView('journal');
+      document.getElementById('journalId').value = j.id;
+      document.getElementById('journalDate').value = j.date;
+      document.getElementById('journalAccountType').value = j.accountType;
+      renderAccountSelector();
+      document.getElementById('journalAccountId').value = j.accountId;
+      document.getElementById('journalPnl').value = j.pnl;
+      document.getElementById('journalSetup').value = j.setup || '';
+      document.getElementById('journalTag').value = j.tag;
+      document.getElementById('journalNotes').value = j.notes || '';
+    }
+
+    function deleteAccount(type, id) {
+      if (!confirm('Delete this account and its linked journal entries?')) return;
+      const collection = getCollection(type);
+      const index = collection.findIndex(a => a.id === id);
+      if (index >= 0) collection.splice(index, 1);
+      state.journal = state.journal.filter(j => !(j.accountType === type && j.accountId === id));
+      afterDataChange();
+    }
+
+    function deleteJournal(id) {
+      if (!confirm('Delete this journal entry?')) return;
+      const idx = state.journal.findIndex(j => j.id === id);
+      if (idx >= 0) state.journal.splice(idx, 1);
+      afterDataChange();
+    }
+
+    function afterDataChange() {
+      assignNumbers();
+      hydrateDerivedNames();
+      recalcAll();
+      hydrateDerivedNames();
+      save();
+      renderAll();
+    }
+
+    function renderAll() {
+      hydrateDerivedNames();
+      assignNumbers();
+      renderDashboard();
+      renderAccounts('eval', 'evalList');
+      renderAccounts('funded', 'fundedList');
+      renderAccounts('live', 'liveList');
+      renderJournal();
+      renderSelectors();
+    }
+
+    document.getElementById('journalDate').value = todayISO();
+    afterDataChange();
+  </script>
+
+<script>
+function applyEvalDefaults(){
+  const size = document.getElementById('evalSize')?.value;
+  const profit = document.getElementById('evalProfit');
+  const dd = document.getElementById('evalDrawdown');
+
+  if(size == "50000"){
+    profit.value = 3000;
+    dd.value = 2000;
+  } else if(size == "25000"){
+    profit.value = 1250;
+    dd.value = 1000;
+  }
+}
+
+function applyFundedDefaults(){
+  const size = document.getElementById('fundedSize')?.value;
+  const profit = document.getElementById('fundedProfit');
+  const dd = document.getElementById('fundedDrawdown');
+
+  if(size == "50000"){
+    profit.value = 3000;
+    dd.value = 2000;
+  } else if(size == "25000"){
+    profit.value = 1250;
+    dd.value = 1000;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  const evalSize = document.getElementById('evalSize');
+  const fundedSize = document.getElementById('fundedSize');
+
+  if(evalSize){
+    evalSize.addEventListener("change", applyEvalDefaults);
+  }
+  if(fundedSize){
+    fundedSize.addEventListener("change", applyFundedDefaults);
+  }
+});
+</script>
+
+</body>
+</html>
